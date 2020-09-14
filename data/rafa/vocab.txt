@@ -36,7 +36,6 @@ C=O
 C=N
 NCl
 C=C
-CBr
 C1CCNC1
 Cl
 C1=COC=CC1

@@ -19,13 +19,13 @@ def build_parser():
     parser.add_argument('--hidden_size', type=int)
     parser.add_argument('--batch_size', type=int)
     parser.add_argument('--latent_size', type=int)
+    parser.add_argument('--use_activation', type=bool)
     parser.add_argument('--n_out', type=int)
     parser.add_argument('--depthT', type=int)
     parser.add_argument('--depthG', type=int)
 
     parser.add_argument('--lr', type=float)
     parser.add_argument('--clip_norm', type=float)
-    parser.add_argument('--warmup', type=int)
 
     parser.add_argument('--epoch', type=int)
     parser.add_argument('--anneal_rate', type=float)

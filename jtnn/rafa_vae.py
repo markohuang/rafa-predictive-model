@@ -16,33 +16,34 @@ import copy, math
 
 class RAFAVAE(nn.Module):
 
-    def __init__(self, vocab, hidden_size, latent_size, n_out, depthT, depthG, evaluate=False, num_layers=1):
+    def __init__(self, vocab, args, evaluate=False):
         super(RAFAVAE, self).__init__()
         self.vocab = vocab
-        self.hidden_size = hidden_size
-        self.latent_size = latent_size = latent_size / 2 #Tree and Mol has two vectors
+        self.hidden_size = args.hidden_size
+        self.latent_size = latent_size = args.latent_size / 2 #Tree and Mol has two vectors
 
-        self.jtnn = JTNNEncoder(hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
-        self.decoder = JTNNDecoder(vocab, hidden_size, latent_size, nn.Embedding(vocab.size(), hidden_size))
+        self.jtnn = JTNNEncoder(self.hidden_size, args.depthT, nn.Embedding(vocab.size(), self.hidden_size))
+        self.decoder = JTNNDecoder(vocab, self.hidden_size, latent_size, nn.Embedding(vocab.size(), self.hidden_size))
 
-        self.jtmpn = JTMPN(hidden_size, depthG)
-        self.mpn = MPN(hidden_size, depthG)
+        self.jtmpn = JTMPN(self.hidden_size, args.depthG)
+        self.mpn = MPN(self.hidden_size, args.depthG)
 
-        self.A_assm = nn.Linear(latent_size, hidden_size, bias=False)
+        self.A_assm = nn.Linear(latent_size, self.hidden_size, bias=False)
         self.assm_loss = nn.CrossEntropyLoss(size_average=False)
 
-        self.T_mean = nn.Linear(hidden_size, latent_size)
-        self.T_var = nn.Linear(hidden_size, latent_size)
-        self.G_mean = nn.Linear(hidden_size, latent_size)
-        self.G_var = nn.Linear(hidden_size, latent_size)
+        self.T_mean = nn.Linear(self.hidden_size, latent_size)
+        self.T_var = nn.Linear(self.hidden_size, latent_size)
+        self.G_mean = nn.Linear(self.hidden_size, latent_size)
+        self.G_var = nn.Linear(self.hidden_size, latent_size)
 
         # For predicting properties
+        self.num_layers = args.num_layers
         layers = []
-        for i in range(num_layers-1):
+        for i in range(self.num_layers-1):
             layers.append(nn.Linear(latent_size*2, latent_size*2))
-            layers.append(nn.ReLU())
-        layers.append(nn.Linear(latent_size*2, n_out))
-        layers.append(nn.ReLU())
+            if args.use_activation:
+                layers.append(nn.ReLU())
+        layers.append(nn.Linear(latent_size*2, args.n_out))
         self.out = nn.Sequential(*layers)
         self.evaluate = evaluate
 

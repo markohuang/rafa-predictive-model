@@ -12,7 +12,7 @@ from collections import deque
 import cPickle as pickle
 
 from jtnn import *
-from helpers import build_parser, set_random_seed
+from auxiliaries import *
 import rdkit
 
 
@@ -30,29 +30,33 @@ if __name__ == "__main__":
     with open(json_path) as handle:
         args = json.loads(handle.read())
     args.update(cmd_args)
-    if args['seed'] is not None:
+    if args.has_key('seed'):
         set_random_seed(args['seed'])
     else:
-        seed = set_random_seed()
-        args['seed'] = seed
-    if args['save_dir'] is not None:
+        args['seed'] = set_random_seed()
+    if not args.has_key('save_dir'):
         args['save_dir'] = "{}-h{}-l{}-n{}-e{}-s{}".format(
             args['target'], args['hidden_size'], args['latent_size'],
             args['num_layers'], args['epoch'], args['seed']
         )
     # save model settings
-    with open(os.path.join(args['save_dir'], 'model.json'), "w") as fp:
-        json.dump(args, fp, sort_keys=True, indent=4)
+    if not os.path.exists(args['save_dir']):
+        os.makedirs(args['save_dir'])
+    dump_json_path = os.path.join(args['save_dir'], 'model.json')
+    if not os.path.exists(dump_json_path):
+        with open(dump_json_path, "w") as fp:
+            json.dump(args, fp, sort_keys=True, indent=4)
     args = Namespace(**args)
     device = 'cuda' if args.cuda else 'cpu'
+    train_path = os.path.join(args.target, 'rafa-train')
+    val_path = os.path.join(args.target, 'rafa-val')
     print args
     
 
     vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
     vocab = Vocab(vocab)
 
-    model = RAFAVAE(vocab, args.hidden_size, args.latent_size, args.n_out, args.depthT,
-                    args.depthG, evaluate=False, num_layers=args.num_layers)
+    model = RAFAVAE(vocab, args, evaluate=False)
     if args.cuda:
         model = model.cuda()
     print model
@@ -79,8 +83,8 @@ if __name__ == "__main__":
     meters = np.zeros(1)
 
     for epoch in xrange(args.epoch):
-        loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
-        val_loader = MolTreeFolder(args.val, vocab, args.batch_size, num_workers=4)
+        loader = MolTreeFolder(train_path, vocab, args.batch_size, num_workers=4)
+        val_loader = MolTreeFolder(val_path, vocab, args.batch_size, num_workers=4)
         for batch in loader:
             total_step += 1
             try:

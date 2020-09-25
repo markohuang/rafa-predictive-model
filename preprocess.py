@@ -5,10 +5,11 @@ from multiprocessing import Pool
 
 import math, random, sys
 from optparse import OptionParser
-import cPickle as pickle
+import pickle as pickle
 
 from jtnn import *
 import rdkit
+from rdkit import RDLogger
 import glob, shutil, os
 
 def tensorize(payload, assm=True):
@@ -27,9 +28,9 @@ def tensorize(payload, assm=True):
     return mol_tree
 
 def package_data(data, num_splits, processed_folder, prefix):
-    le = (len(data) + num_splits - 1) / num_splits
-    for split_id in xrange(num_splits):
-        st = split_id * le
+    le = int((len(data) + num_splits - 1) / num_splits)
+    for split_id in range(num_splits):
+        st = int(split_id * le)
         sub_data = data[st : st + le]
         with open('{}-tensors-{}.pkl'.format(prefix, split_id), 'wb') as f:
             pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)
@@ -39,8 +40,8 @@ def package_data(data, num_splits, processed_folder, prefix):
         shutil.move(f, os.path.join(processed_folder, f))
 
 if __name__ == "__main__":
-    lg = rdkit.RDLogger.logger() 
-    lg.setLevel(rdkit.RDLogger.CRITICAL)
+    lg = RDLogger.logger() 
+    lg.setLevel(RDLogger.CRITICAL)
 
     parser = OptionParser()
     parser.add_option("-n", "--split", dest="nsplits", default=5)
@@ -74,3 +75,4 @@ if __name__ == "__main__":
     package_data(train_data, num_splits, os.path.join(target, 'rafa-train'), 'train')
     package_data(val_data, num_splits, os.path.join(target, 'rafa-val'), 'val')
     package_data(test_data, num_splits, os.path.join(target, 'rafa-test'), 'test')
+    print('\n---Preprocessing Complete---\n')

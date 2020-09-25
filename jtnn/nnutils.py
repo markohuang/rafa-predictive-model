@@ -4,10 +4,11 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 def create_var(tensor, requires_grad=None):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if requires_grad is None:
-        return Variable(tensor)
+        return Variable(tensor).to(device)
     else:
-        return Variable(tensor, requires_grad=requires_grad)
+        return Variable(tensor, requires_grad=requires_grad).to(device)
 
 def index_select_ND(source, dim, index):
     index_size = index.size()

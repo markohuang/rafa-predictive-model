@@ -1,15 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mol_tree import Vocab, MolTree
-from nnutils import create_var, flatten_tensor, avg_pool
-from jtnn_enc import JTNNEncoder
-from jtnn_dec import JTNNDecoder
-from mpn import MPN
-from jtmpn import JTMPN
-from datautils import tensorize
+from .mol_tree import Vocab, MolTree
+from .nnutils import create_var, flatten_tensor, avg_pool
+from .jtnn_enc import JTNNEncoder
+from .jtnn_dec import JTNNDecoder
+from .mpn import MPN
+from .jtmpn import JTMPN
+from .datautils import tensorize
 
-from chemutils import enum_assemble, set_atommap, copy_edit_mol, attach_mols
+from .chemutils import enum_assemble, set_atommap, copy_edit_mol, attach_mols
 import rdkit
 import rdkit.Chem as Chem
 import copy, math
@@ -20,7 +20,9 @@ class RAFAVAE(nn.Module):
         super(RAFAVAE, self).__init__()
         self.vocab = vocab
         self.hidden_size = args.hidden_size
-        self.latent_size = latent_size = args.latent_size / 2 #Tree and Mol has two vectors
+        # round to nearest even number
+        latent_size = int(args.latent_size)+1 if int(args.latent_size)%2 else int(args.latent_size)
+        self.latent_size = latent_size = int(latent_size / 2) #Tree and Mol has two vectors
 
         self.jtnn = JTNNEncoder(self.hidden_size, args.depthT, nn.Embedding(vocab.size(), self.hidden_size))
         self.decoder = JTNNDecoder(vocab, self.hidden_size, latent_size, nn.Embedding(vocab.size(), self.hidden_size))
@@ -35,6 +37,8 @@ class RAFAVAE(nn.Module):
         self.T_var = nn.Linear(self.hidden_size, latent_size)
         self.G_mean = nn.Linear(self.hidden_size, latent_size)
         self.G_var = nn.Linear(self.hidden_size, latent_size)
+
+        self.device = 'cuda' if args.cuda else 'cpu'
 
         # For predicting properties
         self.num_layers = args.num_layers
@@ -70,8 +74,8 @@ class RAFAVAE(nn.Module):
         return z_vecs, kl_loss
 
     def sample_prior(self, prob_decode=False):
-        z_tree = torch.randn(1, self.latent_size)
-        z_mol = torch.randn(1, self.latent_size)
+        z_tree = torch.randn(1, self.latent_size).to(self.device)
+        z_mol = torch.randn(1, self.latent_size).to(self.device)
         return self.decode(z_tree, z_mol, prob_decode)
 
     def forward(self, x_batch):
@@ -87,7 +91,7 @@ class RAFAVAE(nn.Module):
             return pred
 
         loss = nn.MSELoss()
-        prop_loss = loss(pred.squeeze().double(), torch.tensor(x_labels))
+        prop_loss = loss(pred.squeeze().double(), torch.tensor(x_labels).to(self.device))
 
         kl_div = tree_kl + mol_kl
 
@@ -184,8 +188,8 @@ class RAFAVAE(nn.Module):
         if len(cands) == 0 or (sum(aroma_score) < 0 and check_aroma):
             return None, cur_mol
 
-        cand_smiles,cand_amap = zip(*cands)
-        aroma_score = torch.Tensor(aroma_score)
+        cand_smiles,cand_amap = list(zip(*cands))
+        aroma_score = torch.Tensor(aroma_score).to(self.device)
         cands = [(smiles, all_nodes, cur_node) for smiles in cand_smiles]
 
         if len(cands) > 1:
@@ -204,7 +208,7 @@ class RAFAVAE(nn.Module):
 
         backup_mol = Chem.RWMol(cur_mol)
         pre_mol = cur_mol
-        for i in xrange(cand_idx.numel()):
+        for i in range(cand_idx.numel()):
             cur_mol = Chem.RWMol(backup_mol)
             pred_amap = cand_amap[cand_idx[i].item()]
             new_global_amap = copy.deepcopy(global_amap)

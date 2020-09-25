@@ -1,7 +1,10 @@
 numpy
 torch
 scikit-learn
+scipy
 networkx
 six
 pandas
 matplotlib
+jinja2
+plotly

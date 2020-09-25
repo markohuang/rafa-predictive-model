@@ -8,12 +8,13 @@ def build_parser():
     import argparse
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--load_json', type=str)
-    parser.add_argument('--target', type=str)
+    parser.add_argument('--target', type=str, required=True)
     parser.add_argument('--train', type=str)
     parser.add_argument('--val', type=str)
     parser.add_argument('--vocab', type=str)
-    parser.add_argument('--save_dir', type=str)
+    parser.add_argument('--save_dir', type=str, required=True)
     parser.add_argument('--load_epoch', type=int)
+    parser.add_argument('--total_trials', type=int)
 
     parser.add_argument('--num_layers', type=int)
     parser.add_argument('--hidden_size', type=int)

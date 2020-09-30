@@ -45,8 +45,8 @@ for batch in loader:
 
 # plot
 save_dir = model_dir
-np.save(save_dir+'/pred', pred)
-np.save(save_dir+'/act', act)
+np.save(save_dir+'/pred-test', pred)
+np.save(save_dir+'/act-test', act)
 
 # save_dir = 'homo-h40-l56-n3-e20-s1481720974'
 # target = 'homo'
@@ -54,7 +54,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-pred, act = np.load(save_dir+'/pred.npy'), np.load(save_dir+'/act.npy')
+pred, act = np.load(save_dir+'/pred-test.npy'), np.load(save_dir+'/act-test.npy')
 plt.figure()
 ax = plt.gca()
 ax.plot([0,1],[0,1], transform=ax.transAxes, color='green')
@@ -63,5 +63,5 @@ plt.scatter(act, pred, s=1)
 plt.xlabel('Actual')
 plt.ylabel('Predicted')
 plt.title(target)
-plt.savefig(save_dir+'/'+target+'.png', dpi=300)
+plt.savefig(save_dir+'/'+target+'-test.png', dpi=300)
 

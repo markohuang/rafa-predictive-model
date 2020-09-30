@@ -104,7 +104,6 @@ def train(parametrization):
     vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
     vocab = Vocab(vocab)
     print(args)
-    
     model = RAFAVAE(vocab, args, evaluate=False)
     if args.cuda:
         model = model.cuda()
@@ -116,7 +115,6 @@ def evaluate(model):
     args = Namespace(**args)
     vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
     vocab = Vocab(vocab)
-
     test_path = os.path.join(args.target, 'rafa-test')
     model.eval()
     loader = MolTreeFolder(test_path, vocab, args.batch_size, num_workers=4)
@@ -126,6 +124,41 @@ def evaluate(model):
         loss += float(model(batch).data)
         iters += 1
     return loss / iters
+
+
+def plot_train(model):
+    args = get_args()
+    args = Namespace(**args)
+    vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
+    vocab = Vocab(vocab)
+    train_path = os.path.join(args.target, 'rafa-train')
+    model.set_mode(evaluate=True)
+    model.eval()
+    loader = MolTreeFolder(train_path, vocab, args.batch_size, num_workers=4)
+    pred = np.zeros(0)
+    act = np.zeros(0)
+    for batch in loader:
+        output = model(batch)
+        output = output.data.cpu().numpy().squeeze()
+        labels = np.array([x.label for x in batch[0]])
+        pred = np.concatenate((pred, output))
+        act = np.concatenate((act, labels))
+    save_dir = args.save_dir
+    np.save(save_dir+'/pred-train', pred)
+    np.save(save_dir+'/act-train', act)
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    pred, act = np.load(save_dir+'/pred-train.npy'), np.load(save_dir+'/act-train.npy')
+    plt.figure()
+    ax = plt.gca()
+    ax.plot([0,1],[0,1], transform=ax.transAxes, color='green')
+    ax.set_aspect('equal')
+    plt.scatter(act, pred, s=1)
+    plt.xlabel('Actual')
+    plt.ylabel('Predicted')
+    plt.title(args.target)
+    plt.savefig(save_dir+'/'+args.target+'-train.png', dpi=300)
 
 
 def train_evaluate(parametrization):
@@ -182,10 +215,14 @@ if __name__ == "__main__":
     print(means)
 
     # re-train best model
+    best_parameters['plot'] = True
     model = train(best_parameters)
     torch.save(model.state_dict(), args.save_dir + f"/{args.target}-model")
     best_model_param = { **vars(args), **best_parameters }
     with open(dump_json_path, "w") as fp:
         json.dump(best_model_param, fp, sort_keys=True, indent=4)
+    
+    # plot pred v. act for train set
+    plot_train(model)
 
 

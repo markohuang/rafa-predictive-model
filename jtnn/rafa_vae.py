@@ -78,6 +78,9 @@ class RAFAVAE(nn.Module):
         z_mol = torch.randn(1, self.latent_size).to(self.device)
         return self.decode(z_tree, z_mol, prob_decode)
 
+    def set_mode(self, evaluate):
+        self.evaluate = evaluate
+
     def forward(self, x_batch):
         x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder, x_labels = x_batch
         x_tree_vecs, x_tree_mess, x_mol_vecs = self.encode(x_jtenc_holder, x_mpn_holder)

@@ -13,20 +13,11 @@ from collections import deque
 import pickle as pickle
 
 from jtnn import *
-from auxiliaries import *
+from auxiliaries import build_parser, set_random_seed, get_args_and_vocab
 import rdkit
 import json, os
 from rdkit import RDLogger
 
-
-def get_args():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--save_dir', type=str)
-    parser.add_argument('--target', type=str)
-    model_dir = parser.parse_args().save_dir
-    with open(os.path.join(model_dir, 'model.json')) as handle:
-        args = json.loads(handle.read())
-    return args
 
 
 def trainer(model, args, vocab):
@@ -98,11 +89,9 @@ def trainer(model, args, vocab):
 
 
 def train(parametrization):
-    args = get_args()
+    args, vocab = get_args_and_vocab()
     args = {**args, **parametrization}
     args = Namespace(**args)
-    vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
-    vocab = Vocab(vocab)
     print(args)
     model = RAFAVAE(vocab, args, evaluate=False)
     if args.cuda:
@@ -111,10 +100,8 @@ def train(parametrization):
 
 
 def evaluate(model):
-    args = get_args()
+    args, vocab = get_args_and_vocab()
     args = Namespace(**args)
-    vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
-    vocab = Vocab(vocab)
     test_path = os.path.join(args.target, 'rafa-test')
     model.eval()
     loader = MolTreeFolder(test_path, vocab, args.batch_size, num_workers=4)
@@ -127,10 +114,8 @@ def evaluate(model):
 
 
 def plot_train(model):
-    args = get_args()
+    args, vocab = get_args_and_vocab()
     args = Namespace(**args)
-    vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
-    vocab = Vocab(vocab)
     train_path = os.path.join(args.target, 'rafa-train')
     model.set_mode(evaluate=True)
     model.eval()
@@ -173,7 +158,7 @@ if __name__ == "__main__":
     # get arguments
     cmd_args = vars(build_parser().parse_args())
     cmd_args = {k: v for k, v in list(cmd_args.items()) if v is not None}
-    json_path = cmd_args.get('load_json', './default_args.json')
+    json_path = cmd_args.get('load_json', './default_pred_args.json')
     with open(json_path) as handle:
         args = json.loads(handle.read())
     args.update(cmd_args)

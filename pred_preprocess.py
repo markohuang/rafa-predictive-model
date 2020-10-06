@@ -12,6 +12,7 @@ import rdkit
 from rdkit import RDLogger
 import glob, shutil, os
 
+
 def tensorize(payload, assm=True):
     mol_tree = MolTree(payload)
     mol_tree.recover()

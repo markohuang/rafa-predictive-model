@@ -10,6 +10,9 @@ args = parser.parse_args()
 df = pd.read_csv('mols_rafadb.csv')
 df = df.dropna(subset=[args.target])
 df = df[['smiles', args.target]]
+# clip outliers for rate
+if args.target == 'rate':
+    df = df[((rate > 1e-100) & (rate < 1e-8))]
 
 if not os.path.exists(args.target):
     os.makedirs(args.target)

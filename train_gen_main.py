@@ -33,8 +33,8 @@ if 'seed' in args:
 else:
     args['seed'] = set_random_seed()
 if 'save_dir' not in args:
-    args['save_dir'] = "gen-{}-h{}-l{}-n{}-e{}-s{}".format(
-        args['target'], args['hidden_size'], args['latent_size'],
+    args['save_dir'] = "gen-h{}-l{}-n{}-e{}-s{}".format(
+        args['hidden_size'], args['latent_size'],
         args['num_layers'], args['epoch'], args['seed']
     )
 # save model settings
@@ -45,6 +45,7 @@ if not os.path.exists(dump_json_path):
     with open(dump_json_path, "w") as fp:
         json.dump(args, fp, sort_keys=True, indent=4)
 args = Namespace(**args)
+print(args)
 train_path = os.path.join('rafa-processed')
 device = 'cuda' if args.cuda else 'cpu'
 
@@ -80,6 +81,7 @@ beta = args.beta
 meters = np.zeros(4)
 
 for epoch in range(args.epoch):
+    print(f"Currently at epoch: {epoch+1}")
     loader = MolTreeFolder(train_path, vocab, args.batch_size, num_workers=4)
     for batch in loader:
         total_step += 1

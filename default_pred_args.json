@@ -12,11 +12,11 @@
     "depthG": 3,
     "lr": 1e-3,
     "clip_norm": 50.0,
-    "epoch": 10,
+    "epoch": 30,
     "anneal_rate": 0.9,
     "anneal_iter": 40000,
     "kl_anneal_iter": 2000,
     "print_iter": 100,
     "save_iter": 100000,
-    "total_trials": 50
+    "total_trials": 30
 }

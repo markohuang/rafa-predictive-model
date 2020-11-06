@@ -12,13 +12,15 @@ df = df.dropna(subset=[args.target])
 df = df[['smiles', args.target]]
 # clip outliers for rate
 if args.target == 'rate':
+    rate = df['rate']
     df = df[((rate > 1e-100) & (rate < 1e-8))]
+    df['rate'] = np.log(df['rate'])
 
 if not os.path.exists(args.target):
     os.makedirs(args.target)
 
-# Three way split of 60% train set, 20% val set, 20% test set
-train, val, test = np.split(df.sample(frac=1), [int(.6*len(df)), int(.8*len(df))])
+# Three way split of 70% train set, 20% val set, 10% test set
+train, val, test = np.split(df.sample(frac=1), [int(.7*len(df)), int(.9*len(df))])
 # All
 x0 = df['smiles']
 y0 = df[args.target]

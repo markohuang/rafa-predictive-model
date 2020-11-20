@@ -22,7 +22,6 @@ class JTNNEncoder(nn.Module):
     def forward(self, fnode, fmess, node_graph, mess_graph, scope):
         fnode = create_var(fnode)
         fmess = create_var(fmess)
-        mess_graph = mess_graph
         node_graph = create_var(node_graph)
         mess_graph = create_var(mess_graph)
         messages = create_var(torch.zeros(mess_graph.size(0), self.hidden_size))
@@ -107,6 +106,7 @@ class GraphGRU(nn.Module):
         self.W_h = nn.Linear(input_size + hidden_size, hidden_size)
 
     def forward(self, h, x, mess_graph):
+        # nn.functional.sigmoid deprecated
         mask = torch.ones(h.size(0), 1)
         mask[0] = 0 #first vector is padding
         mask = create_var(mask)
@@ -114,16 +114,16 @@ class GraphGRU(nn.Module):
             h_nei = index_select_ND(h, 0, mess_graph)
             sum_h = h_nei.sum(dim=1)
             z_input = torch.cat([x, sum_h], dim=1)
-            z = F.sigmoid(self.W_z(z_input))
+            z = torch.sigmoid(self.W_z(z_input))
 
             r_1 = self.W_r(x).view(-1, 1, self.hidden_size)
             r_2 = self.U_r(h_nei)
-            r = F.sigmoid(r_1 + r_2)
+            r = torch.sigmoid(r_1 + r_2)
             
             gated_h = r * h_nei
             sum_gated_h = gated_h.sum(dim=1)
             h_input = torch.cat([x, sum_gated_h], dim=1)
-            pre_h = F.tanh(self.W_h(h_input))
+            pre_h = torch.tanh(self.W_h(h_input))
             h = (1.0 - z) * sum_h + z * pre_h
             h = h * mask
 

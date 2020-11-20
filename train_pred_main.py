@@ -36,8 +36,9 @@ def trainer(model, args, vocab):
     print(("Model #Params: %dK" % (sum([x.nelement() for x in model.parameters()]) / 1000,)))
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    scheduler = lr_scheduler.ExponentialLR(optimizer, args.anneal_rate)
-    scheduler.step()
+    scheduler = lr_scheduler.ExponentialLR(optimizer, args.anneal_rate, verbose=True)
+    # As per warning
+    # scheduler.step()
 
     param_norm = lambda m: math.sqrt(sum([p.norm().item() ** 2 for p in m.parameters()]))
     grad_norm = lambda m: math.sqrt(sum([p.grad.norm().item() ** 2 for p in m.parameters() if p.grad is not None]))
@@ -48,6 +49,7 @@ def trainer(model, args, vocab):
     for epoch in range(args.epoch):
         loader = MolTreeFolder(train_path, vocab, args.batch_size, num_workers=4)
         val_loader = MolTreeFolder(val_path, vocab, args.batch_size, num_workers=4)
+        model.train()
         for batch in loader:
             total_step += 1
             model.zero_grad()
@@ -69,19 +71,15 @@ def trainer(model, args, vocab):
 
             if total_step % args.anneal_iter == 0:
                 scheduler.step()
-                print(("learning rate: %.6f" % scheduler.get_lr()[0]))
+                print(("learning rate: %.6f" % scheduler.get_last_lr()[0]))
 
         val_loss = 0.0
         val_steps = 0
+        model.eval()
         for val_batch in val_loader:
             val_steps += 1
-            try:
-                model.zero_grad()
-                loss = model(val_batch)
-                val_loss += float(loss.data)
-            except Exception as e:
-                print(e)
-                continue
+            loss = model(val_batch)
+            val_loss += float(loss.data)
 
         print(("Validation Loss: %.6f" % (val_loss / val_steps)))
         sys.stdout.flush()
@@ -186,10 +184,11 @@ if __name__ == "__main__":
     from ax.service.managed_loop import optimize
     best_parameters, values, experiment, model = optimize(
         parameters = [
-            { "name": "lr", "type": "range", "bounds": [1e-6, 5e-2], "log_scale": True },
-            { "name": "hidden_size", "type": "range", "value_type": "int", "bounds": [100, 650] },
-            { "name": "num_layers", "type": "range", "value_type": "int", "bounds": [1, 5] },
-            { "name": "latent_size", "type": "range", "value_type": "int", "bounds": [40, 100] },
+            # { "name": "lr", "type": "range", "bounds": [1e-5, 5e-2] },
+            # { "name": "hidden_size", "type": "range", "value_type": "int", "bounds": [100, 650] },
+            # { "name": "num_layers", "type": "range", "value_type": "int", "bounds": [1, 5] },
+            # { "name": "latent_size", "type": "range", "value_type": "int", "bounds": [40, 100] },
+            { "name": "epoch", "type": "range", "value_type": "int", "bounds": [20, 100] },
         ],
         evaluation_function=train_evaluate,
         minimize=True,

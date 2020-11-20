@@ -31,7 +31,7 @@ class JTNNVAE(nn.Module):
         self.mpn = MPN(self.hidden_size, args.depthG)
 
         self.A_assm = nn.Linear(latent_size, self.hidden_size, bias=False)
-        self.assm_loss = nn.CrossEntropyLoss(size_average=False)
+        self.assm_loss = nn.CrossEntropyLoss(reduction='sum')
 
         self.T_mean = nn.Linear(self.hidden_size, latent_size)
         self.T_var = nn.Linear(self.hidden_size, latent_size)
@@ -186,7 +186,7 @@ class JTNNVAE(nn.Module):
             return None, cur_mol
 
         cand_smiles,cand_amap = list(zip(*cands))
-        aroma_score = torch.Tensor(aroma_score)
+        aroma_score = torch.Tensor(aroma_score).to(self.device)
         cands = [(smiles, all_nodes, cur_node) for smiles in cand_smiles]
 
         if len(cands) > 1:
@@ -195,7 +195,7 @@ class JTNNVAE(nn.Module):
             cand_vecs = self.jtmpn(fatoms, fbonds, agraph, bgraph, scope, y_tree_mess[0])
             scores = torch.mv(cand_vecs, x_mol_vecs) + aroma_score
         else:
-            scores = torch.Tensor([1.0])
+            scores = torch.Tensor([1.0]).to(self.device)
 
         if prob_decode:
             probs = F.softmax(scores.view(1,-1), dim=1).squeeze() + 1e-7 #prevent prob = 0

@@ -31,7 +31,7 @@ class RAFAVAE(nn.Module):
         self.mpn = MPN(self.hidden_size, args.depthG)
 
         self.A_assm = nn.Linear(latent_size, self.hidden_size, bias=False)
-        self.assm_loss = nn.CrossEntropyLoss(size_average=False)
+        self.assm_loss = nn.CrossEntropyLoss(reduction='sum')
 
         self.T_mean = nn.Linear(self.hidden_size, latent_size)
         self.T_var = nn.Linear(self.hidden_size, latent_size)

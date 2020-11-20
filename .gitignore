@@ -16,3 +16,7 @@ ax-splitting-*/
 ax-strength-*/
 **/*.pkl
 slurm-outputs/
+Theano-master/
+*.txt
+*.pdf
+*.svg

@@ -19,7 +19,7 @@ source $SLURM_TMPDIR/env/bin/activate
 pip install --no-index -r $SOURCEDIR/requirements.txt
 cd $SOURCEDIR/gpytorch
 pip install .
-cd $SOURCEDIR/botorch-0.3.0
+cd $SOURCEDIR/botorch-0.3.1
 pip install .
 cd $SOURCEDIR/Ax-0.1.13
 pip install .

@@ -11,6 +11,7 @@ from jtnn import Vocab
 
 def build_parser():
     parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--database', type=str, default='rafa')
     parser.add_argument('--load_json', type=str)
     # required for predictive model
     parser.add_argument('--target', type=str)
@@ -31,6 +32,8 @@ def build_parser():
     parser.add_argument('--depthT', type=int)
     parser.add_argument('--depthG', type=int)
     parser.add_argument('--beta', type=float, default=0.0)
+    parser.add_argument('--step_beta', type=float, default=0.002)
+    parser.add_argument('--max_beta', type=float, default=1.0)
 
     parser.add_argument('--lr', type=float)
     parser.add_argument('--clip_norm', type=float)
@@ -41,6 +44,7 @@ def build_parser():
     parser.add_argument('--kl_anneal_iter', type=int)
     parser.add_argument('--print_iter', type=int)
     parser.add_argument('--save_iter', type=int)
+    parser.add_argument('--warmup', type=int)
 
     parser.add_argument('--seed', type=int)
     parser.add_argument('--cuda', type=int, default=int(torch.cuda.is_available()))
@@ -71,19 +75,21 @@ def set_random_seed(seed=None):
 def get_args_and_vocab():
     # for hyperparameter optimization loop
     parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--load_json', type=str)
     parser.add_argument('--save_dir', type=str)
     parser.add_argument('--target', type=str)
     model_dir = parser.parse_args().save_dir
     with open(os.path.join(model_dir, 'model.json')) as handle:
         args = json.loads(handle.read())
-    vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
+    vocab = [x.strip("\r\n ") for x in open(args['vocab'])] 
     vocab = Vocab(vocab)
     return args, vocab
 
 
-def load_args_and_vocab(model_dir):
+def load_args_and_vocab(model_dir, vocab_path=False):
     with open(os.path.join(model_dir, 'model.json')) as handle:
         args = json.loads(handle.read())
-    vocab = [x.strip("\r\n ") for x in open(args.vocab)] 
+    vocab_path = vocab_path if vocab_path else args['vocab']
+    vocab = [x.strip("\r\n ") for x in open(vocab_path)] 
     vocab = Vocab(vocab)
     return args, vocab

@@ -8,3 +8,4 @@ pandas
 matplotlib
 jinja2
 plotly
+tqdm

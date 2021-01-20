@@ -34,13 +34,14 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-n", "--split", dest="nsplits", default=10)
     parser.add_option("-j", "--jobs", dest="njobs", default=8)
+    parser.add_option("-d", "--database", dest="database", default='rafa')
     opts,args = parser.parse_args()
     opts.njobs = int(opts.njobs)
 
     pool = Pool(opts.njobs)
     num_splits = int(opts.nsplits)
 
-    with open('./data/rafa/all.txt') as f:
+    with open(f'./data/{opts.database}/all.txt') as f:
         data = [line.strip("\r\n ").split()[0] for line in f]
 
     all_data = pool.map(tensorize, data)
@@ -55,7 +56,7 @@ if __name__ == "__main__":
             pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)
     
     
-    processed_folder = 'rafa-processed'
+    processed_folder = f'{opts.database}-processed'
     if not os.path.exists(processed_folder):
         os.makedirs(processed_folder)
     for f in glob.glob(r'*-*.pkl'):

@@ -1,0 +1,23 @@
+{
+    "target": "homo",
+    "vocab": "/home/huang651/port-to-botorch/rafa-pred-model/data/rafa/vocab.txt",
+    "num_layers": 3,
+    "load_epoch": 0,
+    "hidden_size": 450,
+    "batch_size": 32,
+    "latent_size": 56,
+    "use_activation": true,
+    "n_out": 1,
+    "depthT": 20,
+    "depthG": 3,
+    "lr": 1e-3,
+    "clip_norm": 50.0,
+    "epoch": 150,
+    "anneal_rate": 0.9,
+    "anneal_iter": 40000,
+    "kl_anneal_iter": 2000,
+    "print_iter": 100,
+    "save_iter": 5000,
+    "total_trials": 50,
+    "warmup": 20000
+}

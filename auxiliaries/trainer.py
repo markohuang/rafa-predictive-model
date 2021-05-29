@@ -1,0 +1,1 @@
+# the hope is to setup a trainer class for easier state/hook management

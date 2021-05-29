@@ -1,0 +1,12 @@
+C
+C1=C[NH]C=C1
+CC
+CC(C)C
+CC(N=CN(C)C)=C(C)N=CN(C)C
+CF
+CN
+CN(C)C=CC(=C(C=CN(C)C)C(C)(C)C)C(C)(C)C
+CNC
+CO
+F
+FC(F)F

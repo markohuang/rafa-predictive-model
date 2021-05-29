@@ -1,7 +1,8 @@
-import rdkit
+import rdkit.RDLogger
 import rdkit.Chem as Chem
-from chemutils import get_clique_mol, tree_decomp, get_mol, get_smiles, set_atommap, enum_assemble, decode_stereo
-from vocab import *
+from .chemutils import get_clique_mol, tree_decomp, get_mol, get_smiles, set_atommap, enum_assemble, decode_stereo
+from .vocab import *
+import numpy as np
 
 class MolTreeNode(object):
 
@@ -52,7 +53,7 @@ class MolTreeNode(object):
         if len(new_cands) > 0: cands = new_cands
 
         if len(cands) > 0:
-            self.cands, _ = zip(*cands)
+            self.cands, _ = list(zip(*cands))
             self.cands = list(self.cands)
         else:
             self.cands = []
@@ -61,7 +62,7 @@ class MolTree(object):
 
     def __init__(self, smiles):
         self.label = None
-        if type(smiles) != str:
+        if type(smiles) != str and type(smiles) != np.str_:
             smiles, label = smiles
             self.label = label
         self.smiles = smiles
@@ -126,5 +127,5 @@ if __name__ == "__main__":
         for c in mol.nodes:
             cset.add(c.smiles)
     for x in cset:
-        print x
+        print(x)
 

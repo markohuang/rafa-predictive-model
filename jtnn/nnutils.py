@@ -4,10 +4,11 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 def create_var(tensor, requires_grad=None):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if requires_grad is None:
-        return Variable(tensor)
+        return Variable(tensor).to(device)
     else:
-        return Variable(tensor, requires_grad=requires_grad)
+        return Variable(tensor, requires_grad=requires_grad).to(device)
 
 def index_select_ND(source, dim, index):
     index_size = index.size()
@@ -48,19 +49,20 @@ def inflate_tensor(tensor, scope):
     return torch.stack(batch_vecs, dim=0)
 
 def GRU(x, h_nei, W_z, W_r, U_r, W_h):
+    # nn.functional.sigmoid deprecated
     hidden_size = x.size()[-1]
     sum_h = h_nei.sum(dim=1)
     z_input = torch.cat([x,sum_h], dim=1)
-    z = F.sigmoid(W_z(z_input))
+    z = torch.sigmoid(W_z(z_input))
 
     r_1 = W_r(x).view(-1,1,hidden_size)
     r_2 = U_r(h_nei)
-    r = F.sigmoid(r_1 + r_2)
+    r = torch.sigmoid(r_1 + r_2)
     
     gated_h = r * h_nei
     sum_gated_h = gated_h.sum(dim=1)
     h_input = torch.cat([x,sum_gated_h], dim=1)
-    pre_h = F.tanh(W_h(h_input))
+    pre_h = torch.tanh(W_h(h_input))
     new_h = (1.0 - z) * sum_h + z * pre_h
     return new_h
 

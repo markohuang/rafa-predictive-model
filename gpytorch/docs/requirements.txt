@@ -1,0 +1,7 @@
+nbformat<=4.4
+ipython
+ipykernel
+sphinx
+sphinx_rtd_theme
+nbsphinx
+m2r

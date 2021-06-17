@@ -1,6 +1,6 @@
 {
     "target": "homo",
-    "vocab": "/home/huang651/port-to-botorch/rafa-pred-model/data/rafa/vocab.txt",
+    "vocab": "./data/rafa/vocab.txt",
     "num_layers": 3,
     "load_epoch": 0,
     "hidden_size": 450,

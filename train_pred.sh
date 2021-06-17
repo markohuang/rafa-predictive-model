@@ -15,5 +15,5 @@ module load rdkit/2020.09.1b1
 
 source $HOME/env/bin/activate
 
-jupyter nbconvert --to script gen_preprocess.ipynb
-python -u gen_preprocess.py
+jupyter nbconvert --to script train_pred.ipynb
+python -u train_pred.py
